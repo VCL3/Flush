@@ -1,25 +1,36 @@
 import MySQLdb as mdb
-import sys
+import csv
+import os
 
 def main():
-	#Create connection
+	# Connect to MySQL, using database stockDB@localhost
 	db = mdb.connect(host='localhost', user='weiteliu', db='stockDB')
 
-	with db:
-		#Create cursor
-		cur = db.cursor() 
+	#Create cursor to execute SQL commands
+	cur = db.cursor() 
 
-		cur.execute("CREATE TABLE Stocks(Ticker CHAR(10) PRIMARY KEY, Price INT)")
+	#Create table Stocks in stockDB to store all stock information
+	# cur.execute("CREATE TABLE Stocks(Symbol CHAR(10) PRIMARY KEY, Name CHAR(100), MarketCap CHAR(10), Sector CHAR(100))")
 
-		cur.execute("INSERT INTO Stocks(Ticker) VALUES('TWTR')")
+	# Load data from NYSE
+	with open('Input/NYSE.CSV', 'rU') as csvfile:
+		nyse = csv.reader(csvfile)
+		nyse.next()
+		for row in nyse1:
+			cur.execute("INSERT INTO Stocks(Symbol, Name, MarketCap, Sector) VALUES(%s, %s, %s, %s)", row)
+		print "NYSE LOADED SUCCESSFULLY"
 
+	# Load data from NASDAQ
+	with open('Input/NASDAQ.CSV', 'rU') as csvfile:
+		nasdaq = csv.reader(csvfile)
+		nasdaq.next()
+		for row in nasdaq:
+			cur.execute("INSERT INTO Stocks(Symbol, Name, MarketCap, Sector) VALUES(%s, %s, %s, %s)", row)
+		print "NASDAQ LOADED SUCCESSFULLY"
 
-
-
-
-
-
-
+	# Commit changes and close connection
+	db.commit()		
+	cur.close()
 
 if __name__ == "__main__":
 	main()
