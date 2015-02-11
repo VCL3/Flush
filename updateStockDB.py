@@ -1,6 +1,7 @@
 import MySQLdb as mdb
 from yahoo_finance import Share
-from pprint import pprint
+#import progressbar
+#from pprint import pprint
 
 def main():
 	# Connect to MySQL, using database stockDB@localhost
