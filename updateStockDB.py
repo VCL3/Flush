@@ -3,22 +3,94 @@ from yahoo_finance import Share
 from pprint import pprint
 
 def main():
-	data = dict()
-	data['TWTR'] = []
-	getStockData(data)
-	all = data.items()
-	print all[0][0], all[0][1][0]
+	# Connect to MySQL, using database stockDB@localhost
+	db = mdb.connect(host='localhost', user='weiteliu', db='stockDB')
 
+	with db:
+		# Create cursor to execute SQL commands
+		cur = db.cursor() 
 
+		# Get all symbols
+		cur.execute("SELECT Symbol from Stocks LIMIT 1200, 2000")
 
+		# Fetch all symbols, return list of tuples
+		symbols = cur.fetchall()
 
-def getStockData(data):
-	stock = Share("TWTR")
-	# stock.refresh()
-	# price = stock.get_price()
-	history = stock.get_historical('2015-02-01', '2015-02-04')
-	data['TWTR'].append(stock.get_price())
+		n = 1
+		for symbol in symbols:
+			try:
+				stock = Share(symbol[0])
+				# Get History Data
+				history = getHistory(stock)
+				print n, " : ", symbol[0], " SUCCESS!"
+			except:
+				history = [{'Close' : '0', 'High' : '0', 'Low' : '0'}, {'Close' : '0', 'High' : '0', 'Low' : '0'}, {'Close' : '0', 'High' : '0', 'Low' : '0'}, {'Close' : '0', 'High' : '0', 'Low' : '0'}, {'Close' : '0', 'High' : '0', 'Low' : '0'}]
+				print n, " : ", symbol[0], " FAIL!"
 
+			# Get High
+			high = getHistoryHigh(history)
+			if len(high) != 5:
+				high = ['0', '0', '0', '0','0']
+			cur.execute("INSERT INTO High (Symbol, H5, H4, H3, H2, H1) VALUES (%s, %s, %s, %s, %s, %s)", [symbol[0]] + high)
 
+			# Get Low
+			low = getHistoryLow(history)
+			if len(low) != 5:
+				low = ['0', '0', '0', '0','0']
+			cur.execute("INSERT INTO Low (Symbol, L5, L4, L3, L2, L1) VALUES (%s, %s, %s, %s, %s, %s)", [symbol[0]] + low)
+
+			n += 1
+
+			# price = getHistoryPrice(history)
+			# cur.execute("INSERT INTO Price (Symbol, P26, P25, P24, P23, P22, P21, P20, P19, P18, P17, P16, P15, P14, P13, P12, P11, P10, P9, P8, P7, P6, P5, P4, P3, P2, P1) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", [symbol[0]] + price)
+
+    # for i in range(cur.rowcount):
+    #  	row = cur.fetchone()
+
+    # Commit and Disconnect MySQL
+	db.commit()
+	cur.close()
+	print "UPDATE COMPLETED"
+
+	# stock = Share('CACH')
+	# history = getHistory(stock)
+	# print history
+	# high = getHistoryHigh(history)
+	# print high
+
+def getHistory(stock):
+	history = stock.get_historical('2015-02-04', '2015-02-10')
+	if len(history) != 5:
+		history = [{'Close' : '0', 'High' : '0', 'Low' : '0'}, {'Close' : '0', 'High' : '0', 'Low' : '0'}, {'Close' : '0', 'High' : '0', 'Low' : '0'}, {'Close' : '0', 'High' : '0', 'Low' : '0'}, {'Close' : '0', 'High' : '0', 'Low' : '0'}]
+	return history
+
+# Close price
+def getHistoryPrice(history):
+	price = []
+	for hist in history:
+		price.append(hist['Close'])
+	return price
+
+def getHistoryHigh(history):
+	high = []
+	for hist in history:
+		high.append(hist['High'])
+	return high
+
+def getHistoryLow(history):
+	low = []
+	for hist in history:
+		low.append(hist['Low'])
+	return low
+
+def getDayPrice(stock):
+	return stock.get_price()
+
+def getDayHigh(stock):
+	return stock.get_days_high()
+
+def getDayLow(stock):
+	return stock.get_days_low()
+	
 if __name__ == "__main__":
 	main()
