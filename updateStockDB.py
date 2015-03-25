@@ -12,10 +12,12 @@ def main():
 		cur = db.cursor() 
 
 		# Get all symbols
-		cur.execute("SELECT Symbol from Stocks LIMIT 1200, 2000")
+		cur.execute(" SELECT Symbol from Stocks WHERE Sector = 'Technology' ")
 
 		# Fetch all symbols, return list of tuples
 		symbols = cur.fetchall()
+
+		print "Numbers of stocks:", len(symbols)
 
 		n = 1
 		for symbol in symbols:

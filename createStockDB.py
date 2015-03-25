@@ -10,7 +10,7 @@ def main():
 	cur = db.cursor() 
 
 	'''
-	# Initialize all stock information. DO NOT EXECUTE ANY MORE!!!
+	# Initialize all stock information. DO NOT EXECUTE!
 	
 	# Create table Stocks in stockDB to store all stock information
 	cur.execute("CREATE TABLE Stocks(Symbol CHAR(10), Name CHAR(100), MarketCap CHAR(20), Sector CHAR(100), Exchange CHAR(10), PRIMARY KEY(Symbol))")
